@@ -38,6 +38,14 @@ See `product-specs/specs/mcp-conventions.md` for the full protocol spec.
 
 Zero external Go dependencies for gpio, display, audio, network. Serial uses raw syscalls (`syscall` package).
 
+## Related
+
+- [CognitiveOS](https://github.com/CognitiveOS-Project/cognitiveos) — main project repository
+- [cognitive-os.org](https://cognitive-os.org) — project website
+- [cognitiveosd](https://github.com/CognitiveOS-Project/cognitiveosd) — daemon that spawns these MCP servers
+- [Product Specs](https://github.com/CognitiveOS-Project/product-specs) — MCP protocol conventions
+- [CognitiveOS Project](https://github.com/CognitiveOS-Project) — GitHub organization
+
 ## Author
 
 **Jean Machuca** — [GitHub](https://github.com/jeanmachuca) · [Sponsor](https://github.com/sponsors/jeanmachuca)
