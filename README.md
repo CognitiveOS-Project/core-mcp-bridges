@@ -38,6 +38,7 @@ See `product-specs/specs/mcp-conventions.md` for the full protocol spec.
 
 Zero external Go dependencies for gpio, display, audio, network. Serial uses raw syscalls (`syscall` package).
 
+
 ## Author
 
 **Jean Machuca** — [GitHub](https://github.com/jeanmachuca) · [Sponsor](https://github.com/sponsors/jeanmachuca)
