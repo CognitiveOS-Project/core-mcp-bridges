@@ -1,29 +1,37 @@
 # Core MCP Bridges
 
-Hardware abstraction layer for CognitiveOS — lightweight MCP servers that expose device capabilities to the AI.
-
-## Servers
+Hardware abstraction layer for CognitiveOS — 5 lightweight MCP servers that expose device capabilities to the AI.
 
 | Server | Exposes | Backend |
 |--------|---------|---------|
-| `display-mcp` | render_image, render_video, screenshot | fbv, mpv --vo=drm, /dev/fb0 |
-| `audio-mcp` | play_audio, capture_mic, tts | ALSA (aplay, arecord), mpg123 |
-| `network-mcp` | scan_wifi, connect, status | iwconfig, wpa_supplicant, ping |
-| `gpio-mcp` | pin_read, pin_write, pwm | /sys/class/gpio, libgpiod |
-| `serial-mcp` | port_list, connect, send, receive | /dev/tty* |
+| `display-mcp` | render_image, render_video, screenshot, clear | fbv, mpv --vo=drm, /dev/fb0 |
+| `audio-mcp` | play, capture, tts, set_volume, mute, list_devices | ALSA (aplay, arecord, amixer), espeak |
+| `network-mcp` | scan, connect, disconnect, status, list_interfaces | iw, wpa_supplicant, dhcpcd, ip |
+| `gpio-mcp` | pin_read, pin_write, pwm, mode, list_pins | /sys/class/gpio, /sys/class/pwm |
+| `serial-mcp` | list_ports, connect, send, receive, disconnect | /dev/tty* raw syscalls |
 
 ## Build
 
 ```bash
-go build -o bin/display-mcp ./display/
-go build -o bin/audio-mcp ./audio/
-go build -o bin/network-mcp ./network/
-go build -o bin/gpio-mcp ./gpio/
-go build -o bin/serial-mcp ./serial/
+go build -o bin/display-mcp ./display
+go build -o bin/audio-mcp ./audio
+go build -o bin/network-mcp ./network
+go build -o bin/gpio-mcp ./gpio
+go build -o bin/serial-mcp ./serial
 ```
 
-Each server is a standalone binary implementing the MCP JSON-RPC protocol over stdio.
+Each binary is standalone, implements MCP JSON-RPC over stdio.
 
 ## Protocol
 
-All servers follow the MCP standard (see product-specs for CognitiveOS conventions). Tools are stateless where possible; state lives in cognitiveosd.
+All servers implement the MCP JSON-RPC 2.0 protocol over stdin/stdout:
+
+- `mcp.list_tools` — Returns available tool metadata
+- `<tool_name>` — Calls a tool with arguments
+- `healthcheck` — Notification; responds with `healthcheck_ok`
+
+See `product-specs/specs/mcp-conventions.md` for full protocol details.
+
+## Dependencies
+
+Zero external Go dependencies for gpio, display, audio, network. Serial uses raw syscalls (`syscall` package). Only `github.com/spf13/cobra` is not used — MCP is implemented directly.
