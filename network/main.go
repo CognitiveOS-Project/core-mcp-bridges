@@ -100,7 +100,9 @@ func main() {
 
 		// Write wpa_supplicant config
 		confDir := "/cognitiveos/run/network"
-		os.MkdirAll(confDir, 0755)
+		if err := os.MkdirAll(confDir, 0755); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: mkdir config: %v", err)
+		}
 		confPath := filepath.Join(confDir, "wpa_"+ssid+".conf")
 
 		conf := fmt.Sprintf(`network={
@@ -120,7 +122,7 @@ func main() {
 		}
 
 		dhcp := exec.Command("dhcpcd", "-n", iface)
-		dhcp.Run()
+		dhcp.Run() // best-effort; dhcpcd may not be available
 
 		return map[string]interface{}{"status": "connecting", "ssid": ssid, "interface": iface}, nil
 	})
@@ -131,8 +133,8 @@ func main() {
 			iface = "wlan0"
 		}
 
-		exec.Command("wpa_cli", "-i", iface, "terminate").Run()
-		exec.Command("dhcpcd", "-k", iface).Run()
+		exec.Command("wpa_cli", "-i", iface, "terminate").Run() // best-effort cleanup
+		exec.Command("dhcpcd", "-k", iface).Run()               // best-effort cleanup
 		return map[string]interface{}{"status": "disconnected", "interface": iface}, nil
 	})
 
