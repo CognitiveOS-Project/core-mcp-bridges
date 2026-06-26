@@ -148,14 +148,22 @@ func main() {
 		}
 
 		pwmPath := fmt.Sprintf("/sys/class/pwm/pwmchip0/pwm%d", pin)
-		os.MkdirAll(pwmPath, 0755)
+		if err := os.MkdirAll(pwmPath, 0755); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: mkdir pwm: %v", err)
+		}
 
 		period := 1000000000 / freq
 		dutyNs := int(float64(period) * duty / 100.0)
 
-		os.WriteFile(filepath.Join(pwmPath, "period"), []byte(strconv.Itoa(period)), 0644)
-		os.WriteFile(filepath.Join(pwmPath, "duty_cycle"), []byte(strconv.Itoa(dutyNs)), 0644)
-		os.WriteFile(filepath.Join(pwmPath, "enable"), []byte("1"), 0644)
+		if err := os.WriteFile(filepath.Join(pwmPath, "period"), []byte(strconv.Itoa(period)), 0644); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: write period: %v", err)
+		}
+		if err := os.WriteFile(filepath.Join(pwmPath, "duty_cycle"), []byte(strconv.Itoa(dutyNs)), 0644); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: write duty_cycle: %v", err)
+		}
+		if err := os.WriteFile(filepath.Join(pwmPath, "enable"), []byte("1"), 0644); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: write enable: %v", err)
+		}
 
 		return map[string]interface{}{"pin": pin, "duty_cycle_percent": duty, "frequency_hz": freq}, nil
 	})
