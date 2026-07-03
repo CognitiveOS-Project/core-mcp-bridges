@@ -16,7 +16,7 @@ func captureStdout(fn func()) string {
 	fn()
 	w.Close()
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	_, _ = io.Copy(&buf, r)
 	os.Stdout = stdout
 	return buf.String()
 }
@@ -79,7 +79,7 @@ func TestUnknownTool(t *testing.T) {
 	})
 
 	var resp map[string]interface{}
-	json.Unmarshal([]byte(strings.TrimSpace(output)), &resp)
+	_ = json.Unmarshal([]byte(strings.TrimSpace(output)), &resp)
 
 	if resp["error"] == nil {
 		t.Fatal("expected error for unknown tool")
