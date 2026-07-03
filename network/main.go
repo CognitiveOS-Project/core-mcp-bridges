@@ -122,7 +122,7 @@ func main() {
 		}
 
 		dhcp := exec.Command("dhcpcd", "-n", iface)
-		dhcp.Run() // best-effort; dhcpcd may not be available
+		_ = dhcp.Run() // best-effort; dhcpcd may not be available
 
 		return map[string]interface{}{"status": "connecting", "ssid": ssid, "interface": iface}, nil
 	})
@@ -133,8 +133,8 @@ func main() {
 			iface = "wlan0"
 		}
 
-		exec.Command("wpa_cli", "-i", iface, "terminate").Run() // best-effort cleanup
-		exec.Command("dhcpcd", "-k", iface).Run()               // best-effort cleanup
+		_ = exec.Command("wpa_cli", "-i", iface, "terminate").Run() // best-effort cleanup
+		_ = exec.Command("dhcpcd", "-k", iface).Run()              // best-effort cleanup
 		return map[string]interface{}{"status": "disconnected", "interface": iface}, nil
 	})
 

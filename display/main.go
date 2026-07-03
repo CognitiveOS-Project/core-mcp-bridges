@@ -155,7 +155,7 @@ func main() {
 			size = 1024 * 768 * 4
 		}
 		zeros := make([]byte, size)
-		fb.Write(zeros)
+		_, _ = fb.Write(zeros)
 		return map[string]interface{}{"status": "cleared"}, nil
 	})
 
