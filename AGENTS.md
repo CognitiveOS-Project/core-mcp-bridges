@@ -1,6 +1,6 @@
 # Core MCP Bridges
 
-Hardware abstraction layer for CognitiveOS — 5 lightweight MCP servers that expose device capabilities to the AI.
+Hardware abstraction layer for CognitiveOS — 6 lightweight MCP servers that expose device capabilities to the AI.
 
 | Server | Exposes | Backend |
 |--------|---------|---------|
@@ -9,6 +9,7 @@ Hardware abstraction layer for CognitiveOS — 5 lightweight MCP servers that ex
 | `network-mcp` | scan, connect, disconnect, status, list_interfaces | iw, wpa_supplicant, dhcpcd, ip |
 | `gpio-mcp` | pin_read, pin_write, pwm, mode, list_pins | /sys/class/gpio, /sys/class/pwm |
 | `serial-mcp` | list_ports, connect, send, receive, disconnect | /dev/tty* raw syscalls |
+| `package-mcp` | search, list, install, remove, info, update | cpm CLI |
 
 ## Build
 
@@ -18,6 +19,7 @@ go build -o bin/audio-mcp ./audio
 go build -o bin/network-mcp ./network
 go build -o bin/gpio-mcp ./gpio
 go build -o bin/serial-mcp ./serial
+go build -o bin/package-mcp ./package
 ```
 
 Each binary is standalone, implements MCP JSON-RPC over stdio.
