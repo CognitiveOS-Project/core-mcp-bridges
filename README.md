@@ -15,11 +15,7 @@ Hardware abstraction layer for CognitiveOS — lightweight MCP servers that expo
 ## Build
 
 ```bash
-go build -o bin/display-mcp ./display
-go build -o bin/audio-mcp ./audio
-go build -o bin/network-mcp ./network
-go build -o bin/gpio-mcp ./gpio
-go build -o bin/serial-mcp ./serial
+make build    # Builds all bridges to build/bin/
 ```
 
 Each binary is standalone and implements the MCP protocol over stdin/stdout.
@@ -46,13 +42,21 @@ Zero external Go dependencies for gpio, display, audio, network. Serial uses raw
 - [Product Specs](https://github.com/CognitiveOS-Project/product-specs) — MCP protocol conventions
 - [CognitiveOS Project](https://github.com/CognitiveOS-Project) — GitHub organization
 
+## Build
+
+```bash
+make build    # Compile all bridges to build/bin/
+make test     # Run tests
+make lint     # Run go vet
+make clean    # Remove build artifacts
+```
+
 ## Contributing
 
-1. Branch from `development`, not `main`
-2. Use topic branches: `feature/<name>`, `fix/<name>`, `bugfix/<name>`
-3. Open a PR to `development` with a clear title and description
-4. Merge via squash after review
-5. Changes flow to `main` via a release PR
+1. Branch from `main`
+2. Use topic branches: `feature/<name>`, `fix/<name>`
+3. Open a PR to `main` with a clear title and description
+4. Merge after review
 
 See the [SDLC repo](https://github.com/CognitiveOS-Project/sdlc) for the full contribution guide, code review standards, and testing strategy.
 

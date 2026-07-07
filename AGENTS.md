@@ -14,12 +14,10 @@ Hardware abstraction layer for CognitiveOS — 6 lightweight MCP servers that ex
 ## Build
 
 ```bash
-go build -o bin/display-mcp ./display
-go build -o bin/audio-mcp ./audio
-go build -o bin/network-mcp ./network
-go build -o bin/gpio-mcp ./gpio
-go build -o bin/serial-mcp ./serial
-go build -o bin/package-mcp ./package
+make build    # compile all bridges to build/bin/
+make test     # run tests
+make lint     # go vet
+make clean    # remove build artifacts
 ```
 
 Each binary is standalone, implements MCP JSON-RPC over stdio.
