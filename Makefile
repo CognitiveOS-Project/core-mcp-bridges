@@ -24,6 +24,7 @@ test:
 	$(GO) test ./... -v -count=1
 
 lint:
+	shellcheck scripts/build.sh
 	$(GO) vet ./...
 
 clean:
