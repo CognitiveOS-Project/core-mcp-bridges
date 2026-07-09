@@ -7,7 +7,7 @@ BUILD_DIR := build
 BIN_DIR := $(BUILD_DIR)/bin
 GO := go
 
-.PHONY: build test lint clean pack
+.PHONY: build test lint clean pack publish
 
 build:
 	@mkdir -p $(BIN_DIR)/bridges
@@ -24,6 +24,18 @@ pack: build
 	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
 	@CPM=/workspace/cpm/build/bin/cpm
 	@$${CPM} pack --bin $(BIN_DIR)/bridges --name core-mcp-bridges --version $$VERSION --os linux --arch amd64 --description "Core hardware MCP bridges"
+
+publish: pack
+	@if [ -z "$${REGISTRY_TOKEN}" ]; then \
+		echo "  ERROR: REGISTRY_TOKEN not set"; exit 1; \
+	fi
+	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+	@for cgp in *.cgp; do \
+		[ -f "$$cgp" ] || continue; \
+		URL="https://github.com/CognitiveOS-Project/core-mcp-bridges/releases/download/$$VERSION/$$(basename $$cgp)"; \
+		/workspace/cpm/build/bin/cpm publish "$$cgp" --download-url "$$URL"; \
+		rm "$$cgp"; \
+	done
 
 test:
 	$(GO) test ./... -v -count=1

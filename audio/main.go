@@ -156,7 +156,9 @@ func main() {
 
 		block, _ := args["block"].(bool)
 		if !block {
-			_ = cmd.Start()
+			if err := cmd.Start(); err != nil {
+				return nil, fmt.Errorf("E_HARDWARE: failed to start playback: %v", err)
+			}
 			return map[string]interface{}{"status": "playing", "path": path}, nil
 		}
 		if output, err := cmd.CombinedOutput(); err != nil {
@@ -195,7 +197,9 @@ func main() {
 			return nil, fmt.Errorf("E_HARDWARE: TTS failed (espeak not installed?): %v", err)
 		}
 		playCmd := exec.Command("aplay", tmpFile)
-		_ = playCmd.Run()
+		if err := playCmd.Run(); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: failed to play TTS audio: %v", err)
+		}
 		return map[string]interface{}{"status": "spoken", "text": text}, nil
 	})
 

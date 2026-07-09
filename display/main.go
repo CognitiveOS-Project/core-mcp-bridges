@@ -201,7 +201,9 @@ func main() {
 			size = 1024 * 768 * 4
 		}
 		zeros := make([]byte, size)
-		_, _ = fb.Write(zeros)
+		if _, err := fb.Write(zeros); err != nil {
+			return nil, fmt.Errorf("E_HARDWARE: clear failed: %v", err)
+		}
 		return map[string]interface{}{"status": "cleared"}, nil
 	})
 

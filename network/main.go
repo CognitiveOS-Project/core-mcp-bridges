@@ -164,7 +164,9 @@ func main() {
 		}
 
 		dhcp := exec.Command("dhcpcd", "-n", iface)
-		_ = dhcp.Run()
+		if err := dhcp.Run(); err != nil {
+			s.Log("dhcpcd failed: %v", err)
+		}
 
 		return map[string]interface{}{"status": "connecting", "ssid": ssid, "interface": iface}, nil
 	})
@@ -175,8 +177,12 @@ func main() {
 			iface = "wlan0"
 		}
 
-		_ = exec.Command("wpa_cli", "-i", iface, "terminate").Run()
-		_ = exec.Command("dhcpcd", "-k", iface).Run()
+		if err := exec.Command("wpa_cli", "-i", iface, "terminate").Run(); err != nil {
+			s.Log("wpa_cli terminate failed: %v", err)
+		}
+		if err := exec.Command("dhcpcd", "-k", iface).Run(); err != nil {
+			s.Log("dhcpcd -k failed: %v", err)
+		}
 		return map[string]interface{}{"status": "disconnected", "interface": iface}, nil
 	})
 
