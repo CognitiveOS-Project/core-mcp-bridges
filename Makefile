@@ -10,13 +10,13 @@ GO := go
 .PHONY: build test lint clean
 
 build:
-	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(BIN_DIR)/bridges
 	@for dir in */; do
 		bridge=$$(basename "$$dir")
 		[ "$$bridge" = "internal" ] || [ "$$bridge" = "build" ] && continue
 		if [ -f "$${dir}main.go" ] || [ -f "$${dir}go.mod" ]; then
 			echo "  building bridge: $$bridge"
-			CGO_ENABLED=0 $(GO) build -ldflags="-s -w" -o $(BIN_DIR)/$$bridge "./$$dir"
+			CGO_ENABLED=0 $(GO) build -ldflags="-s -w" -o $(BIN_DIR)/bridges/$$bridge "./$$dir"
 		fi
 	done
 
