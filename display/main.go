@@ -10,7 +10,15 @@ import (
 )
 
 func main() {
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			fmt.Println("display-mcp 0.2.0")
+			return
+		}
+	}
+
 	s := mcp.New("display-mcp")
+	s.SetVersion("0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -23,6 +31,14 @@ func main() {
 					"fit":  map[string]interface{}{"type": "string", "enum": []string{"fill", "fit", "stretch"}, "default": "fit", "description": "How to fit the image to the screen"},
 				},
 				"required": []string{"path"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"rendered"}},
+					"path":   map[string]interface{}{"type": "string"},
+					"fit":    map[string]interface{}{"type": "string"},
+				},
 			},
 		},
 		{
@@ -37,6 +53,13 @@ func main() {
 				},
 				"required": []string{"path"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"played"}},
+					"path":   map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.display.screenshot",
@@ -48,13 +71,26 @@ func main() {
 				},
 				"required": []string{"output_path"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"path":       map[string]interface{}{"type": "string"},
+					"size_bytes": map[string]interface{}{"type": "integer"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.display.clear",
 			Description: "Clear the framebuffer and return display to idle state",
 			InputSchema: map[string]interface{}{
-				"type":     "object",
+				"type":       "object",
 				"properties": map[string]interface{}{},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"cleared"}},
+				},
 			},
 		},
 	}
@@ -68,11 +104,24 @@ func main() {
 			return nil, fmt.Errorf("E_NOT_FOUND: image not found: %s", path)
 		}
 
-		cmd := exec.Command("fbv", "-i", path)
+		fit, _ := args["fit"].(string)
+		if fit == "" {
+			fit = "fit"
+		}
+
+		cmd := exec.Command("fbv")
+		switch fit {
+		case "fill":
+			cmd = exec.Command("fbv", "-f", path)
+		case "stretch":
+			cmd = exec.Command("fbv", "-s", path)
+		default:
+			cmd = exec.Command("fbv", "-i", path)
+		}
 		if output, err := cmd.CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("E_HARDWARE: fbv failed: %s", strings.TrimSpace(string(output)))
 		}
-		return map[string]interface{}{"status": "rendered", "path": path}, nil
+		return map[string]interface{}{"status": "rendered", "path": path, "fit": fit}, nil
 	})
 
 	s.Handle("cognitiveos.display.render_video", func(args map[string]interface{}) (interface{}, error) {
@@ -109,7 +158,7 @@ func main() {
 
 		fb, err := os.Open("/dev/fb0")
 		if err != nil {
-			return nil, fmt.Errorf("E_HARDWARE: cannot open framebuffer: %v", err)
+			return nil, fmt.Errorf("E_NO_DEVICE: cannot open framebuffer: %v", err)
 		}
 		defer fb.Close()
 
@@ -139,10 +188,7 @@ func main() {
 	s.Handle("cognitiveos.display.clear", func(args map[string]interface{}) (interface{}, error) {
 		fb, err := os.OpenFile("/dev/fb0", os.O_WRONLY, 0)
 		if err != nil {
-			fb, _ = os.OpenFile("/dev/fb0", os.O_WRONLY, 0)
-			if err != nil {
-				return nil, fmt.Errorf("E_HARDWARE: cannot open framebuffer: %v", err)
-			}
+			return nil, fmt.Errorf("E_NO_DEVICE: cannot open framebuffer: %v", err)
 		}
 		defer fb.Close()
 

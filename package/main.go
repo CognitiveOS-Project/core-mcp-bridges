@@ -11,7 +11,15 @@ import (
 )
 
 func main() {
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			fmt.Println("package-mcp 0.2.0")
+			return
+		}
+	}
+
 	s := mcp.New("package-mcp")
+	s.SetVersion("0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -24,13 +32,27 @@ func main() {
 				},
 				"required": []string{"query"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.list",
 			Description: "List all currently installed packages",
 			InputSchema: map[string]interface{}{
-				"type":     "object",
+				"type":       "object",
 				"properties": map[string]interface{}{},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
 			},
 		},
 		{
@@ -44,6 +66,13 @@ func main() {
 				},
 				"required": []string{"name"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.remove",
@@ -54,6 +83,13 @@ func main() {
 					"name": map[string]interface{}{"type": "string", "description": "Package name to remove"},
 				},
 				"required": []string{"name"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
 			},
 		},
 		{
@@ -66,6 +102,13 @@ func main() {
 				},
 				"required": []string{"name"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.update",
@@ -76,6 +119,13 @@ func main() {
 					"name": map[string]interface{}{"type": "string", "description": "Package name to update"},
 				},
 				"required": []string{"name"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"output": map[string]interface{}{"type": "string"},
+				},
 			},
 		},
 	}
@@ -137,9 +187,8 @@ func main() {
 }
 
 type cpmResult struct {
-	Status   string `json:"status"`
-	Output   string `json:"output,omitempty"`
-	Error    string `json:"error,omitempty"`
+	Status string `json:"status"`
+	Output string `json:"output,omitempty"`
 }
 
 func runCPM(args ...string) (interface{}, error) {
@@ -153,7 +202,7 @@ func runCPM(args ...string) (interface{}, error) {
 	outputStr := strings.TrimSpace(string(output))
 
 	if err != nil {
-		return nil, fmt.Errorf("E_HARDWARE: cpm failed: %s", outputStr)
+		return nil, fmt.Errorf("E_INTERNAL: cpm failed: %s", outputStr)
 	}
 
 	var structured map[string]interface{}
@@ -161,9 +210,9 @@ func runCPM(args ...string) (interface{}, error) {
 		return structured, nil
 	}
 
-	return map[string]interface{}{
-		"status": "ok",
-		"output": outputStr,
+	return cpmResult{
+		Status: "ok",
+		Output: outputStr,
 	}, nil
 }
 

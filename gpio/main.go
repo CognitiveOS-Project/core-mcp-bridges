@@ -13,7 +13,15 @@ import (
 var gpioBase = "/sys/class/gpio"
 
 func main() {
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			fmt.Println("gpio-mcp 0.2.0")
+			return
+		}
+	}
+
 	s := mcp.New("gpio-mcp")
+	s.SetVersion("0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -26,6 +34,13 @@ func main() {
 					"chip": map[string]interface{}{"type": "integer", "default": 0, "description": "GPIO chip number"},
 				},
 				"required": []string{"pin"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"pin":   map[string]interface{}{"type": "integer"},
+					"value": map[string]interface{}{"type": "integer", "minimum": 0, "maximum": 1},
+				},
 			},
 		},
 		{
@@ -40,6 +55,13 @@ func main() {
 				},
 				"required": []string{"pin", "value"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"pin":   map[string]interface{}{"type": "integer"},
+					"value": map[string]interface{}{"type": "integer"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.gpio.pwm",
@@ -47,12 +69,20 @@ func main() {
 			InputSchema: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"pin":              map[string]interface{}{"type": "integer", "description": "PWM pin number"},
+					"pin":               map[string]interface{}{"type": "integer", "description": "PWM pin number"},
 					"duty_cycle_percent": map[string]interface{}{"type": "number", "minimum": 0, "maximum": 100, "description": "Duty cycle 0-100%"},
-					"frequency_hz":     map[string]interface{}{"type": "integer", "default": 1000, "description": "PWM frequency in Hz"},
-					"chip":             map[string]interface{}{"type": "integer", "default": 0, "description": "PWM chip number"},
+					"frequency_hz":      map[string]interface{}{"type": "integer", "default": 1000, "description": "PWM frequency in Hz"},
+					"chip":              map[string]interface{}{"type": "integer", "default": 0, "description": "PWM chip number"},
 				},
 				"required": []string{"pin", "duty_cycle_percent"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"pin":               map[string]interface{}{"type": "integer"},
+					"duty_cycle_percent": map[string]interface{}{"type": "number"},
+					"frequency_hz":      map[string]interface{}{"type": "integer"},
+				},
 			},
 		},
 		{
@@ -67,6 +97,13 @@ func main() {
 				},
 				"required": []string{"pin", "mode"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"pin":  map[string]interface{}{"type": "integer"},
+					"mode": map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.gpio.list_pins",
@@ -75,6 +112,12 @@ func main() {
 				"type": "object",
 				"properties": map[string]interface{}{
 					"chip": map[string]interface{}{"type": "integer", "default": 0, "description": "GPIO chip number"},
+				},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "array",
+				"items": map[string]interface{}{
+					"type": "string",
 				},
 			},
 		},
@@ -90,7 +133,7 @@ func main() {
 		}
 		val, err := os.ReadFile(filepath.Join(gpioBase, fmt.Sprintf("gpio%d", pin), "value"))
 		if err != nil {
-			return nil, fmt.Errorf("E_INVALID_PIN: %v", err)
+			return nil, fmt.Errorf("E_NO_DEVICE: %v", err)
 		}
 		return map[string]interface{}{"pin": pin, "value": int(strings.TrimSpace(string(val))[0] - '0')}, nil
 	})
@@ -134,7 +177,7 @@ func main() {
 			return nil, fmt.Errorf("E_HARDWARE: export failed: %v", err)
 		}
 		if err := gpioSetDir(pin, dir); err != nil {
-			return nil, fmt.Errorf("E_MODE_NOT_SUPPORTED: %v", err)
+			return nil, fmt.Errorf("E_HARDWARE: set direction failed: %v", err)
 		}
 		return map[string]interface{}{"pin": pin, "mode": mode}, nil
 	})
@@ -171,7 +214,7 @@ func main() {
 	s.Handle("cognitiveos.gpio.list_pins", func(args map[string]interface{}) (interface{}, error) {
 		entries, err := os.ReadDir(gpioBase)
 		if err != nil {
-			return nil, fmt.Errorf("E_CHIP_NOT_FOUND: %v", err)
+			return nil, fmt.Errorf("E_NO_DEVICE: %v", err)
 		}
 		var pins []string
 		for _, e := range entries {
@@ -179,7 +222,7 @@ func main() {
 				pins = append(pins, e.Name())
 			}
 		}
-		return strings.Join(pins, "\n"), nil
+		return pins, nil
 	})
 
 	s.Log("gpio-mcp ready")

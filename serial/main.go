@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -16,6 +17,14 @@ type serialSession struct {
 	fd       int
 	portPath string
 	baud     int
+}
+
+type portInfo struct {
+	Path        string `json:"path"`
+	Description string `json:"description,omitempty"`
+	Vendor      string `json:"vendor,omitempty"`
+	Product     string `json:"product,omitempty"`
+	Serial      string `json:"serial,omitempty"`
 }
 
 var (
@@ -37,13 +46,34 @@ var baudRates = map[int]uint32{
 }
 
 func main() {
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			fmt.Println("serial-mcp 0.2.0")
+			return
+		}
+	}
+
 	s := mcp.New("serial-mcp")
+	s.SetVersion("0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
 			Name:        "cognitiveos.serial.list_ports",
 			Description: "List available serial ports on the system",
 			InputSchema: map[string]interface{}{"type": "object", "properties": map[string]interface{}{}},
+			OutputSchema: map[string]interface{}{
+				"type": "array",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"path":        map[string]interface{}{"type": "string"},
+						"description": map[string]interface{}{"type": "string"},
+						"vendor":      map[string]interface{}{"type": "string"},
+						"product":     map[string]interface{}{"type": "string"},
+						"serial":      map[string]interface{}{"type": "string"},
+					},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.connect",
@@ -57,6 +87,14 @@ func main() {
 				},
 				"required": []string{"port"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"session_id": map[string]interface{}{"type": "string"},
+					"port":       map[string]interface{}{"type": "string"},
+					"baud_rate":  map[string]interface{}{"type": "integer"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.send",
@@ -68,6 +106,12 @@ func main() {
 					"data":       map[string]interface{}{"type": "string", "description": "Data to send (text)"},
 				},
 				"required": []string{"session_id", "data"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"bytes_written": map[string]interface{}{"type": "integer"},
+				},
 			},
 		},
 		{
@@ -81,6 +125,13 @@ func main() {
 				},
 				"required": []string{"session_id"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"data":       map[string]interface{}{"type": "string"},
+					"bytes_read": map[string]interface{}{"type": "integer"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.disconnect",
@@ -92,19 +143,30 @@ func main() {
 				},
 				"required": []string{"session_id"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status":     map[string]interface{}{"type": "string", "enum": []string{"disconnected"}},
+					"session_id": map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 	}
 
 	s.Handle("cognitiveos.serial.list_ports", func(args map[string]interface{}) (interface{}, error) {
-		var ports []string
+		var ports []portInfo
 		for _, pattern := range []string{"/dev/ttyUSB*", "/dev/ttyS*", "/dev/ttyAMA*", "/dev/ttyACM*"} {
 			matches, _ := filepath.Glob(pattern)
-			ports = append(ports, matches...)
+			for _, p := range matches {
+				pi := portInfo{Path: p}
+				pi.enrich()
+				ports = append(ports, pi)
+			}
 		}
 		if len(ports) == 0 {
 			return nil, fmt.Errorf("E_PORT_NOT_FOUND: no serial ports found")
 		}
-		return strings.Join(ports, "\n"), nil
+		return ports, nil
 	})
 
 	s.Handle("cognitiveos.serial.connect", func(args map[string]interface{}) (interface{}, error) {
@@ -125,10 +187,9 @@ func main() {
 
 		fd, err := syscall.Open(portPath, syscall.O_RDWR|syscall.O_NOCTTY, 0)
 		if err != nil {
-			return nil, fmt.Errorf("E_PORT_BUSY: cannot open %s: %v", portPath, err)
+			return nil, fmt.Errorf("E_BUSY: cannot open %s: %v", portPath, err)
 		}
 
-		// Set serial port attributes via ioctl
 		var tios syscall.Termios
 		tios.Cflag = syscall.CREAD | syscall.CLOCAL | rate | syscall.CS8
 		tios.Iflag = syscall.IGNPAR
@@ -172,7 +233,7 @@ func main() {
 		b := []byte(data)
 		n, err := syscall.Write(ses.fd, b)
 		if err != nil {
-			return nil, fmt.Errorf("E_PORT_ERROR: write failed: %v", err)
+			return nil, fmt.Errorf("E_HARDWARE: write failed: %v", err)
 		}
 		return map[string]interface{}{"bytes_written": n}, nil
 	})
@@ -225,5 +286,40 @@ func main() {
 	if err := s.Run(); err != nil {
 		s.Log("fatal: %v", err)
 		os.Exit(1)
+	}
+}
+
+func (pi *portInfo) enrich() {
+	devName := filepath.Base(pi.Path)
+	sysPath := filepath.Join("/sys/class/tty", devName, "device")
+	if _, err := os.Readlink(sysPath); err == nil {
+		ueventPath := filepath.Join("/sys/class/tty", devName, "device", "uevent")
+		if data, err := os.ReadFile(ueventPath); err == nil {
+			for _, line := range strings.Split(string(data), "\n") {
+				if strings.HasPrefix(line, "DRIVER=") {
+					parts := strings.SplitN(line, "=", 2)
+					if len(parts) == 2 {
+						pi.Description = parts[1] + " serial port"
+					}
+				}
+			}
+		}
+		// Try udevadm for vendor/product
+		if udev, err := exec.Command("udevadm", "info", "--query=property", "--name="+pi.Path).Output(); err == nil {
+			for _, line := range strings.Split(string(udev), "\n") {
+				if pi.Vendor == "" && strings.HasPrefix(line, "ID_VENDOR=") {
+					pi.Vendor = strings.TrimPrefix(line, "ID_VENDOR=")
+				}
+				if pi.Product == "" && strings.HasPrefix(line, "ID_MODEL=") {
+					pi.Product = strings.TrimPrefix(line, "ID_MODEL=")
+				}
+				if pi.Serial == "" && strings.HasPrefix(line, "ID_SERIAL_SHORT=") {
+					pi.Serial = strings.TrimPrefix(line, "ID_SERIAL_SHORT=")
+				}
+				if pi.Description == "" && strings.HasPrefix(line, "ID_MODEL_FROM_DATABASE=") {
+					pi.Description = strings.TrimPrefix(line, "ID_MODEL_FROM_DATABASE=")
+				}
+			}
+		}
 	}
 }

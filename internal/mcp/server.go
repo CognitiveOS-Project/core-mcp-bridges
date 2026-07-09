@@ -7,36 +7,48 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 )
 
 type Tool struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	InputSchema interface{} `json:"inputSchema"`
+	Name         string      `json:"name"`
+	Description  string      `json:"description"`
+	InputSchema  interface{} `json:"inputSchema"`
+	OutputSchema interface{} `json:"outputSchema,omitempty"`
 }
 
 type Handler func(map[string]interface{}) (interface{}, error)
 
 type Server struct {
-	Name    string
-	Tools   []Tool
+	Name     string
+	Version  string
+	Tools    []Tool
 	handlers map[string]Handler
-	started time.Time
-	logger  *log.Logger
-	mu      sync.Mutex
+	started  time.Time
+	logger   *log.Logger
+	mu       sync.Mutex
 }
 
 func New(name string) *Server {
+	return NewWithVersion(name, "0.1.0")
+}
+
+func NewWithVersion(name, version string) *Server {
 	s := &Server{
 		Name:     name,
+		Version:  version,
 		handlers: make(map[string]Handler),
 		started:  time.Now(),
 		logger:   log.New(os.Stderr, name+": ", log.LstdFlags),
 	}
 	return s
+}
+
+func (s *Server) SetVersion(v string) {
+	s.Version = v
 }
 
 func (s *Server) Handle(tool string, fn Handler) {
@@ -67,17 +79,27 @@ func (s *Server) Run() error {
 }
 
 type jsonRPCRequest struct {
-	JSONRPC string          `json:"jsonrpc"`
+	JSONRPC string           `json:"jsonrpc"`
 	ID      *json.RawMessage `json:"id,omitempty"`
-	Method  string          `json:"method"`
-	Params  json.RawMessage `json:"params,omitempty"`
+	Method  string           `json:"method"`
+	Params  json.RawMessage  `json:"params,omitempty"`
+}
+
+type mcpContent struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type mcpResult struct {
+	Content   []mcpContent `json:"content"`
+	IsError   bool         `json:"isError,omitempty"`
 }
 
 type jsonRPCResponse struct {
-	JSONRPC string      `json:"jsonrpc"`
+	JSONRPC string           `json:"jsonrpc"`
 	ID      *json.RawMessage `json:"id"`
-	Result  interface{} `json:"result,omitempty"`
-	Error   *rpcError   `json:"error,omitempty"`
+	Result  interface{}      `json:"result,omitempty"`
+	Error   *rpcError        `json:"error,omitempty"`
 }
 
 type rpcError struct {
@@ -91,12 +113,10 @@ func (s *Server) handleMessage(line string) {
 	if err := json.Unmarshal([]byte(line), &req); err != nil {
 		return
 	}
-
 	if req.ID == nil {
 		s.handleNotification(req.Method, req.Params)
 		return
 	}
-
 	resp := s.dispatch(&req)
 	reply, _ := json.Marshal(resp)
 	fmt.Println(string(reply))
@@ -139,12 +159,13 @@ func (s *Server) handleToolCall(id *json.RawMessage, method string, params json.
 	s.mu.Unlock()
 
 	if !ok {
+		errText := fmt.Sprintf("ERROR:E_NOT_FOUND: tool not found: %s", method)
 		return &jsonRPCResponse{
 			JSONRPC: "2.0",
 			ID:      id,
-			Error: &rpcError{
-				Code:    -32601,
-				Message: fmt.Sprintf("Tool not found: %s", method),
+			Result: mcpResult{
+				IsError: true,
+				Content: []mcpContent{{Type: "text", Text: errText}},
 			},
 		}
 	}
@@ -164,20 +185,35 @@ func (s *Server) handleToolCall(id *json.RawMessage, method string, params json.
 
 	result, err := handler(args)
 	if err != nil {
+		errMsg := err.Error()
+		if !strings.HasPrefix(errMsg, "ERROR:") {
+			if strings.HasPrefix(errMsg, "E_") {
+				errMsg = "ERROR:" + errMsg
+			} else {
+				errMsg = "ERROR:E_INTERNAL: " + errMsg
+			}
+		}
 		return &jsonRPCResponse{
 			JSONRPC: "2.0",
 			ID:      id,
-			Error:   &rpcError{Code: -32000, Message: err.Error()},
+			Result: mcpResult{
+				IsError: true,
+				Content: []mcpContent{{Type: "text", Text: errMsg}},
+			},
 		}
+	}
+
+	text, ok := result.(string)
+	if !ok {
+		data, _ := json.Marshal(result)
+		text = string(data)
 	}
 
 	return &jsonRPCResponse{
 		JSONRPC: "2.0",
 		ID:      id,
-		Result: map[string]interface{}{
-			"content": []map[string]interface{}{
-				{"type": "text", "text": fmt.Sprintf("%v", result)},
-			},
+		Result: mcpResult{
+			Content: []mcpContent{{Type: "text", Text: text}},
 		},
 	}
 }

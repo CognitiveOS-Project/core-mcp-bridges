@@ -11,7 +11,15 @@ import (
 )
 
 func main() {
+	for _, arg := range os.Args[1:] {
+		if arg == "--version" {
+			fmt.Println("audio-mcp 0.2.0")
+			return
+		}
+	}
+
 	s := mcp.New("audio-mcp")
+	s.SetVersion("0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -26,6 +34,13 @@ func main() {
 				},
 				"required": []string{"path"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"playing", "played"}},
+					"path":   map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.capture",
@@ -37,6 +52,14 @@ func main() {
 					"output_path":      map[string]interface{}{"type": "string", "description": "Path to save the captured audio"},
 				},
 				"required": []string{"output_path"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status":           map[string]interface{}{"type": "string", "enum": []string{"captured"}},
+					"path":             map[string]interface{}{"type": "string"},
+					"duration_seconds": map[string]interface{}{"type": "integer"},
+				},
 			},
 		},
 		{
@@ -51,6 +74,13 @@ func main() {
 				},
 				"required": []string{"text"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"spoken"}},
+					"text":   map[string]interface{}{"type": "string"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.set_volume",
@@ -62,6 +92,14 @@ func main() {
 					"device": map[string]interface{}{"type": "string", "default": "default", "description": "ALSA device name"},
 				},
 				"required": []string{"volume"},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string", "enum": []string{"volume_set"}},
+					"volume": map[string]interface{}{"type": "number"},
+					"device": map[string]interface{}{"type": "string"},
+				},
 			},
 		},
 		{
@@ -75,13 +113,23 @@ func main() {
 				},
 				"required": []string{"muted"},
 			},
+			OutputSchema: map[string]interface{}{
+				"type": "object",
+				"properties": map[string]interface{}{
+					"status": map[string]interface{}{"type": "string"},
+					"muted":  map[string]interface{}{"type": "boolean"},
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.list_devices",
 			Description: "List available audio playback and capture devices",
 			InputSchema: map[string]interface{}{
-				"type":     "object",
+				"type":       "object",
 				"properties": map[string]interface{}{},
+			},
+			OutputSchema: map[string]interface{}{
+				"type": "string",
 			},
 		},
 	}
@@ -103,7 +151,7 @@ func main() {
 		case strings.HasSuffix(ext, ".mp3"):
 			cmd = exec.Command("mpg123", "-q", path)
 		default:
-			cmd = exec.Command("aplay", path)
+			return nil, fmt.Errorf("E_UNSUPPORTED_FORMAT: unsupported audio format: %s", ext)
 		}
 
 		block, _ := args["block"].(bool)
@@ -130,7 +178,7 @@ func main() {
 
 		cmd := exec.Command("arecord", "-d", strconv.Itoa(duration), "-f", "cd", outputPath)
 		if output, err := cmd.CombinedOutput(); err != nil {
-			return nil, fmt.Errorf("E_CAPTURE_FAILED: arecord failed: %s", strings.TrimSpace(string(output)))
+			return nil, fmt.Errorf("E_HARDWARE: arecord failed: %s", strings.TrimSpace(string(output)))
 		}
 		return map[string]interface{}{"status": "captured", "path": outputPath, "duration_seconds": duration}, nil
 	})
@@ -142,7 +190,6 @@ func main() {
 		}
 
 		tmpFile := "/tmp/cognitiveos-tts.wav"
-		// Try espeak first, fall back to echo
 		cmd := exec.Command("espeak", "-w", tmpFile, text)
 		if err := cmd.Run(); err != nil {
 			return nil, fmt.Errorf("E_HARDWARE: TTS failed (espeak not installed?): %v", err)

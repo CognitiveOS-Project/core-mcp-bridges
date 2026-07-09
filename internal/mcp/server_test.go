@@ -81,8 +81,17 @@ func TestUnknownTool(t *testing.T) {
 	var resp map[string]interface{}
 	_ = json.Unmarshal([]byte(strings.TrimSpace(output)), &resp)
 
-	if resp["error"] == nil {
-		t.Fatal("expected error for unknown tool")
+	result, ok := resp["result"].(map[string]interface{})
+	if !ok {
+		t.Fatal("expected result object")
+	}
+	isError, _ := result["isError"].(bool)
+	if !isError {
+		t.Fatal("expected isError=true for unknown tool")
+	}
+	content, _ := result["content"].([]interface{})
+	if len(content) == 0 {
+		t.Fatal("expected error content")
 	}
 }
 
