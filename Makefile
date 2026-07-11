@@ -7,9 +7,13 @@ BUILD_DIR := build
 BIN_DIR := $(BUILD_DIR)/bin
 GO := go
 
-.PHONY: build test lint clean pack publish
-
+.PHONY: build test lint clean pack publish build-dependencies
+ 
+build-dependencies:
+	@echo "No external dependencies for core-mcp-bridges"
+ 
 build:
+
 	@mkdir -p $(BIN_DIR)/bridges
 	@for dir in */; do
 		bridge=$$(basename "$$dir")
