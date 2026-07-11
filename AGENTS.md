@@ -35,3 +35,10 @@ See `product-specs/specs/mcp-conventions.md` for full protocol details.
 ## Dependencies
 
 Zero external Go dependencies for gpio, display, audio, network. Serial uses raw syscalls (`syscall` package). Only `github.com/spf13/cobra` is not used — MCP is implemented directly.
+
+## Cloning Convention
+- Use SSH () for development.
+- Use HTTPS () for build scripts that clone public dependencies.
+## Cloning Convention
+- Use SSH (git@github.com:) for development.
+- Use HTTPS (https://github.com/) for build scripts that clone public dependencies.
