@@ -27,7 +27,7 @@ build:
 pack: build
 	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "dev")
 	@CPM=/workspace/cpm/build/bin/cpm
-	@$${CPM} pack --bin $(BIN_DIR)/bridges --name core-mcp-bridges --version $$VERSION --os linux --arch amd64 --description "Core hardware MCP bridges"
+	@$${CPM} pack --bin $(BIN_DIR)/bridges --manifest cognitive.json
 
 publish: pack
 	@if [ -z "$${REGISTRY_TOKEN}" ]; then \
