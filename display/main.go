@@ -68,7 +68,20 @@ func main() {
 			return nil, fmt.Errorf("E_NOT_FOUND: image not found: %s", path)
 		}
 
-		cmd := exec.Command("fbv", "-i", path)
+		fit, _ := args["fit"].(string)
+		if fit == "" {
+			fit = "fit"
+		}
+
+		var cmd *exec.Cmd
+		switch fit {
+		case "fill":
+			cmd = exec.Command("fbv", "-f", path)
+		case "stretch":
+			cmd = exec.Command("fbv", "-s", path)
+		default:
+			cmd = exec.Command("fbv", "-i", path)
+		}
 		if output, err := cmd.CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("E_HARDWARE: fbv failed: %s", strings.TrimSpace(string(output)))
 		}
