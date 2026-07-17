@@ -39,6 +39,7 @@ Zero external Go dependencies for gpio, display, audio, network. Serial uses raw
 - [CognitiveOS](https://github.com/CognitiveOS-Project/cognitiveos) — main project repository
 - [cognitive-os.org](https://cognitive-os.org) — project website
 - [cognitiveosd](https://github.com/CognitiveOS-Project/cognitiveosd) — daemon that spawns these MCP servers
+- [coginit](https://github.com/CognitiveOS-Project/coginit) — boot manager that starts the daemon
 - [Product Specs](https://github.com/CognitiveOS-Project/product-specs) — MCP protocol conventions
 - [CognitiveOS Project](https://github.com/CognitiveOS-Project) — GitHub organization
 
