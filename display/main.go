@@ -109,17 +109,18 @@ func main() {
 			fit = "fit"
 		}
 
-		cmd := exec.Command("fbv")
+		mpvArgs := []string{"--vo=drm", "--no-terminal", "--keep-open=no"}
 		switch fit {
 		case "fill":
-			cmd = exec.Command("fbv", "-f", path)
+			mpvArgs = append(mpvArgs, "--panscan=1.0", path)
 		case "stretch":
-			cmd = exec.Command("fbv", "-s", path)
+			mpvArgs = append(mpvArgs, "--panscan=1.0", "--geometry=100%", path)
 		default:
-			cmd = exec.Command("fbv", "-i", path)
+			mpvArgs = append(mpvArgs, "--autofit=fit", path)
 		}
+		cmd := exec.Command("mpv", mpvArgs...)
 		if output, err := cmd.CombinedOutput(); err != nil {
-			return nil, fmt.Errorf("E_HARDWARE: fbv failed: %s", strings.TrimSpace(string(output)))
+			return nil, fmt.Errorf("E_HARDWARE: mpv failed: %s", strings.TrimSpace(string(output)))
 		}
 		return map[string]interface{}{"status": "rendered", "path": path, "fit": fit}, nil
 	})

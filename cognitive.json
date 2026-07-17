@@ -1,19 +1,21 @@
 {
   "name": "core-mcp-bridges",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core hardware MCP bridges",
   "hardware_requirements": {
-    "os": ["linux"],
-    "arch": ["amd64"]
+    "os": ["linux"]
   },
   "hardware_dependencies": {
     "packages": [
       { "name": "alsa-utils", "manager": "apk", "stage": "runtime", "required": true },
-      { "name": "fbv", "manager": "apk", "stage": "runtime", "required": true },
+      { "name": "alsa-lib", "manager": "apk", "stage": "runtime", "required": true },
+      { "name": "espeak", "manager": "apk", "stage": "runtime", "required": true },
+      { "name": "mpg123", "manager": "apk", "stage": "runtime", "required": true },
       { "name": "mpv", "manager": "apk", "stage": "runtime", "required": true },
       { "name": "iw", "manager": "apk", "stage": "runtime", "required": true },
       { "name": "wpa_supplicant", "manager": "apk", "stage": "runtime", "required": true },
-      { "name": "dhcpcd", "manager": "apk", "stage": "runtime", "required": true }
+      { "name": "dhcpcd", "manager": "apk", "stage": "runtime", "required": true },
+      { "name": "libgpiod", "manager": "apk", "stage": "runtime", "required": true }
     ]
   }
 }

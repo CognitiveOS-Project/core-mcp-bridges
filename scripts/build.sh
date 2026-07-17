@@ -11,7 +11,7 @@ if ! command -v go >/dev/null 2>&1; then
 fi
 
 BUILD_DIR="$(cd "$(dirname "$0")/.." && pwd)/build"
-BIN_DIR="${BUILD_DIR}/bin"
+BIN_DIR="${BUILD_DIR}/bin/bridges"
 mkdir -p "${BIN_DIR}"
 
 cd "$(dirname "$0")/.."
