@@ -61,6 +61,12 @@ func main() {
 					"duration_seconds": map[string]interface{}{"type": "integer"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        5000,
+					"battery_impact": "medium",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.tts",
@@ -79,6 +85,12 @@ func main() {
 				"properties": map[string]interface{}{
 					"status": map[string]interface{}{"type": "string", "enum": []string{"spoken"}},
 					"text":   map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        3000,
+					"battery_impact": "low",
 				},
 			},
 		},

@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -18,6 +20,7 @@ type Tool struct {
 	Description  string      `json:"description"`
 	InputSchema  interface{} `json:"inputSchema"`
 	OutputSchema interface{} `json:"outputSchema,omitempty"`
+	Annotations  interface{} `json:"annotations,omitempty"`
 }
 
 type Handler func(map[string]interface{}) (interface{}, error)
@@ -29,6 +32,7 @@ type Server struct {
 	handlers map[string]Handler
 	started  time.Time
 	logger   *log.Logger
+	logFile  *os.File
 	mu       sync.Mutex
 }
 
@@ -42,8 +46,21 @@ func NewWithVersion(name, version string) *Server {
 		Version:  version,
 		handlers: make(map[string]Handler),
 		started:  time.Now(),
-		logger:   log.New(os.Stderr, name+": ", log.LstdFlags),
 	}
+
+	logDir := "/cognitiveos/logs/bridges"
+	if err := os.MkdirAll(logDir, 0755); err == nil {
+		logPath := filepath.Join(logDir, name+".log")
+		f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err == nil {
+			s.logFile = f
+			s.logger = log.New(io.MultiWriter(os.Stderr, f), "", 0)
+		}
+	}
+	if s.logger == nil {
+		s.logger = log.New(os.Stderr, "", 0)
+	}
+
 	return s
 }
 
@@ -58,13 +75,16 @@ func (s *Server) Handle(tool string, fn Handler) {
 }
 
 func (s *Server) Run() error {
-	s.logger.Printf("starting, pid=%d", os.Getpid())
+	s.LogWithLevel("INFO", "starting, pid=%d", os.Getpid())
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		<-sigCh
-		s.logger.Printf("shutting down")
+		s.LogWithLevel("INFO", "shutting down")
+		if s.logFile != nil {
+			s.logFile.Close()
+		}
 		os.Exit(0)
 	}()
 
@@ -225,10 +245,16 @@ func (s *Server) sendHealthcheckResponse() {
 		"tools_healthy":  true,
 	}
 	reply, _ := json.Marshal(resp)
-	s.logger.Printf("healthcheck: uptime=%ds", int(time.Since(s.started).Seconds()))
+	s.logger.Printf("%s [INFO] healthcheck: uptime=%ds", time.Now().UTC().Format(time.RFC3339), int(time.Since(s.started).Seconds()))
 	fmt.Println(string(reply))
 }
 
 func (s *Server) Log(format string, args ...interface{}) {
-	s.logger.Printf(format, args...)
+	s.LogWithLevel("INFO", format, args...)
+}
+
+func (s *Server) LogWithLevel(level, format string, args ...interface{}) {
+	ts := time.Now().UTC().Format(time.RFC3339)
+	msg := fmt.Sprintf(format, args...)
+	s.logger.Printf("%s [%s] %s", ts, level, msg)
 }

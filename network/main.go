@@ -34,6 +34,13 @@ func main() {
 			OutputSchema: map[string]interface{}{
 				"type": "string",
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          3000,
+					"battery_impact":   "medium",
+					"network_required": true,
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.network.connect",
@@ -54,6 +61,13 @@ func main() {
 					"status":    map[string]interface{}{"type": "string", "enum": []string{"connecting"}},
 					"ssid":      map[string]interface{}{"type": "string"},
 					"interface": map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          15000,
+					"battery_impact":   "high",
+					"network_required": true,
 				},
 			},
 		},

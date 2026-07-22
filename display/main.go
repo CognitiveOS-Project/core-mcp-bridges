@@ -40,6 +40,12 @@ func main() {
 					"fit":    map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.display.render_video",
@@ -60,6 +66,12 @@ func main() {
 					"path":   map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        2000,
+					"battery_impact": "medium",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.display.screenshot",
@@ -78,6 +90,12 @@ func main() {
 					"size_bytes": map[string]interface{}{"type": "integer"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        200,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.display.clear",
@@ -90,6 +108,12 @@ func main() {
 				"type": "object",
 				"properties": map[string]interface{}{
 					"status": map[string]interface{}{"type": "string", "enum": []string{"cleared"}},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        50,
+					"battery_impact": "low",
 				},
 			},
 		},
