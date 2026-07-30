@@ -74,6 +74,12 @@ func main() {
 					},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.connect",
@@ -95,6 +101,12 @@ func main() {
 					"baud_rate":  map[string]interface{}{"type": "integer"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        1000,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.send",
@@ -111,6 +123,12 @@ func main() {
 				"type": "object",
 				"properties": map[string]interface{}{
 					"bytes_written": map[string]interface{}{"type": "integer"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        200,
+					"battery_impact": "low",
 				},
 			},
 		},
@@ -132,6 +150,12 @@ func main() {
 					"bytes_read": map[string]interface{}{"type": "integer"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.serial.disconnect",
@@ -148,6 +172,12 @@ func main() {
 				"properties": map[string]interface{}{
 					"status":     map[string]interface{}{"type": "string", "enum": []string{"disconnected"}},
 					"session_id": map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        100,
+					"battery_impact": "low",
 				},
 			},
 		},

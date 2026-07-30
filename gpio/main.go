@@ -42,6 +42,12 @@ func main() {
 					"value": map[string]interface{}{"type": "integer", "minimum": 0, "maximum": 1},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        50,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.gpio.pin_write",
@@ -60,6 +66,12 @@ func main() {
 				"properties": map[string]interface{}{
 					"pin":   map[string]interface{}{"type": "integer"},
 					"value": map[string]interface{}{"type": "integer"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        50,
+					"battery_impact": "low",
 				},
 			},
 		},
@@ -84,6 +96,12 @@ func main() {
 					"frequency_hz":      map[string]interface{}{"type": "integer"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        100,
+					"battery_impact": "medium",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.gpio.mode",
@@ -104,6 +122,12 @@ func main() {
 					"mode": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        50,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.gpio.list_pins",
@@ -118,6 +142,12 @@ func main() {
 				"type": "array",
 				"items": map[string]interface{}{
 					"type": "string",
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        100,
+					"battery_impact": "low",
 				},
 			},
 		},

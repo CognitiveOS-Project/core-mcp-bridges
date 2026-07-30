@@ -87,6 +87,13 @@ func main() {
 					"interface": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          2000,
+					"battery_impact":   "medium",
+					"network_required": true,
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.network.status",
@@ -100,6 +107,12 @@ func main() {
 			OutputSchema: map[string]interface{}{
 				"type": "string",
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.network.list_interfaces",
@@ -112,6 +125,12 @@ func main() {
 				"type": "array",
 				"items": map[string]interface{}{
 					"type": "string",
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        200,
+					"battery_impact": "low",
 				},
 			},
 		},

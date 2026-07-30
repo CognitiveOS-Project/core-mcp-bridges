@@ -39,6 +39,13 @@ func main() {
 					"output": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          2000,
+					"battery_impact":   "low",
+					"network_required": true,
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.list",
@@ -52,6 +59,12 @@ func main() {
 				"properties": map[string]interface{}{
 					"status": map[string]interface{}{"type": "string"},
 					"output": map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
 				},
 			},
 		},
@@ -73,6 +86,13 @@ func main() {
 					"output": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          30000,
+					"battery_impact":   "medium",
+					"network_required": true,
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.remove",
@@ -89,6 +109,12 @@ func main() {
 				"properties": map[string]interface{}{
 					"status": map[string]interface{}{"type": "string"},
 					"output": map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        2000,
+					"battery_impact": "low",
 				},
 			},
 		},
@@ -109,6 +135,12 @@ func main() {
 					"output": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        500,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.package.update",
@@ -125,6 +157,13 @@ func main() {
 				"properties": map[string]interface{}{
 					"status": map[string]interface{}{"type": "string"},
 					"output": map[string]interface{}{"type": "string"},
+				},
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":          30000,
+					"battery_impact":   "medium",
+					"network_required": true,
 				},
 			},
 		},

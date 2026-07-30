@@ -41,6 +41,12 @@ func main() {
 					"path":   map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        map[string]interface{}{"description": "varies by file length"},
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.capture",
@@ -113,6 +119,12 @@ func main() {
 					"device": map[string]interface{}{"type": "string"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        100,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.mute",
@@ -132,6 +144,12 @@ func main() {
 					"muted":  map[string]interface{}{"type": "boolean"},
 				},
 			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        50,
+					"battery_impact": "low",
+				},
+			},
 		},
 		{
 			Name:        "cognitiveos.audio.list_devices",
@@ -142,6 +160,12 @@ func main() {
 			},
 			OutputSchema: map[string]interface{}{
 				"type": "string",
+			},
+			Annotations: map[string]interface{}{
+				"cost": map[string]interface{}{
+					"time_ms":        200,
+					"battery_impact": "low",
+				},
 			},
 		},
 	}
