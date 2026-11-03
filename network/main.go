@@ -48,9 +48,9 @@ func main() {
 			InputSchema: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"ssid":           map[string]interface{}{"type": "string", "description": "Network SSID"},
-					"password":       map[string]interface{}{"type": "string", "description": "Network password (if encrypted)"},
-					"interface":      map[string]interface{}{"type": "string", "default": "wlan0", "description": "Wireless interface name"},
+					"ssid":            map[string]interface{}{"type": "string", "description": "Network SSID"},
+					"password":        map[string]interface{}{"type": "string", "description": "Network password (if encrypted)"},
+					"interface":       map[string]interface{}{"type": "string", "default": "wlan0", "description": "Wireless interface name"},
 					"timeout_seconds": map[string]interface{}{"type": "integer", "default": 15, "description": "Connection timeout"},
 				},
 				"required": []string{"ssid"},

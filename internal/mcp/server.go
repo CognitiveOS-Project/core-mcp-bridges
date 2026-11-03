@@ -111,8 +111,8 @@ type mcpContent struct {
 }
 
 type mcpResult struct {
-	Content   []mcpContent `json:"content"`
-	IsError   bool         `json:"isError,omitempty"`
+	Content []mcpContent `json:"content"`
+	IsError bool         `json:"isError,omitempty"`
 }
 
 type jsonRPCResponse struct {

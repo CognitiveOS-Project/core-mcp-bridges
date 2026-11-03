@@ -81,19 +81,19 @@ func main() {
 			InputSchema: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"pin":               map[string]interface{}{"type": "integer", "description": "PWM pin number"},
+					"pin":                map[string]interface{}{"type": "integer", "description": "PWM pin number"},
 					"duty_cycle_percent": map[string]interface{}{"type": "number", "minimum": 0, "maximum": 100, "description": "Duty cycle 0-100%"},
-					"frequency_hz":      map[string]interface{}{"type": "integer", "default": 1000, "description": "PWM frequency in Hz"},
-					"chip":              map[string]interface{}{"type": "integer", "default": 0, "description": "PWM chip number"},
+					"frequency_hz":       map[string]interface{}{"type": "integer", "default": 1000, "description": "PWM frequency in Hz"},
+					"chip":               map[string]interface{}{"type": "integer", "default": 0, "description": "PWM chip number"},
 				},
 				"required": []string{"pin", "duty_cycle_percent"},
 			},
 			OutputSchema: map[string]interface{}{
 				"type": "object",
 				"properties": map[string]interface{}{
-					"pin":               map[string]interface{}{"type": "integer"},
+					"pin":                map[string]interface{}{"type": "integer"},
 					"duty_cycle_percent": map[string]interface{}{"type": "number"},
-					"frequency_hz":      map[string]interface{}{"type": "integer"},
+					"frequency_hz":       map[string]interface{}{"type": "integer"},
 				},
 			},
 			Annotations: map[string]interface{}{
