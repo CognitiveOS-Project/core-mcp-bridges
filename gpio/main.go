@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CognitiveOS-Project/core-mcp-bridges/internal/mcp"
+	"github.com/CognitiveOS-Project/cogsdk/client/mcp"
 )
 
 var gpioBase = "/sys/class/gpio"
@@ -20,8 +20,7 @@ func main() {
 		}
 	}
 
-	s := mcp.New("gpio-mcp")
-	s.SetVersion("0.2.0")
+	s := mcp.NewWithVersion("gpio-mcp", "0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -256,7 +255,7 @@ func main() {
 	})
 
 	s.Log("gpio-mcp ready")
-	if err := s.Run(); err != nil {
+	if err := s.RunStdio(); err != nil {
 		s.Log("fatal: %v", err)
 		os.Exit(1)
 	}

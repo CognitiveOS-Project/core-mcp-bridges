@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/CognitiveOS-Project/core-mcp-bridges/internal/mcp"
+	"github.com/CognitiveOS-Project/cogsdk/client/mcp"
 )
 
 func main() {
@@ -17,8 +17,7 @@ func main() {
 		}
 	}
 
-	s := mcp.New("display-mcp")
-	s.SetVersion("0.2.0")
+	s := mcp.NewWithVersion("display-mcp", "0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -233,7 +232,7 @@ func main() {
 	})
 
 	s.Log("display-mcp ready")
-	if err := s.Run(); err != nil {
+	if err := s.RunStdio(); err != nil {
 		s.Log("fatal: %v", err)
 		os.Exit(1)
 	}
