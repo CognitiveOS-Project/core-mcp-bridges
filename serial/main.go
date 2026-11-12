@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/CognitiveOS-Project/core-mcp-bridges/internal/mcp"
+	"github.com/CognitiveOS-Project/cogsdk/client/mcp"
 )
 
 type serialSession struct {
@@ -53,8 +53,7 @@ func main() {
 		}
 	}
 
-	s := mcp.New("serial-mcp")
-	s.SetVersion("0.2.0")
+	s := mcp.NewWithVersion("serial-mcp", "0.2.0")
 
 	s.Tools = []mcp.Tool{
 		{
@@ -313,7 +312,7 @@ func main() {
 	})
 
 	s.Log("serial-mcp ready")
-	if err := s.Run(); err != nil {
+	if err := s.RunStdio(); err != nil {
 		s.Log("fatal: %v", err)
 		os.Exit(1)
 	}
