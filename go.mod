@@ -1,6 +1,6 @@
 module github.com/CognitiveOS-Project/core-mcp-bridges
 
-go 1.25.0
+go 1.26
 
 replace github.com/CognitiveOS-Project/cogsdk => /workspace/cogsdk
 
