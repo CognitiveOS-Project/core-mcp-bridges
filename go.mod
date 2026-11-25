@@ -2,9 +2,7 @@ module github.com/CognitiveOS-Project/core-mcp-bridges
 
 go 1.26
 
-replace github.com/CognitiveOS-Project/cogsdk => /workspace/cogsdk
-
-require github.com/CognitiveOS-Project/cogsdk v0.0.0
+require github.com/CognitiveOS-Project/cogsdk v1.1.3
 
 require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
